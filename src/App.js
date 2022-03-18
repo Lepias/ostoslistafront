@@ -12,7 +12,7 @@ function App() {
     amount:''
   });
   //output
-  const [item, setItem] = useState([]);
+  const [list, setList] = useState([]);
 
   function handleChange(e) {
     const value = e.target.value;
@@ -25,7 +25,7 @@ function App() {
   useEffect(() => {
     axios.get(URL)
       .then((response) => {
-        setItem(response.data);
+        setList(response.data);
       }).catch(error => {
         alert(error.response ? error.response.data.error : error);
       });
@@ -42,7 +42,7 @@ function App() {
       }
     })
     .then((response) => {
-      setItem(item => [...item, response.data]);
+      setList(item => [...item, response.data]);
       setItems({
         description:'',
         amount:''
@@ -52,21 +52,37 @@ function App() {
       alert(error.response ? error.response.data.error : error);
     });
   }
+ 
+
+  function remove(id) {
+    const json = JSON.stringify({id:id})
+    axios.post(URL + 'delete.php',json, {
+      headers: {
+        'Content-Type' : 'application/json'
+      }
+    })
+    .then(() => {
+      const deleteItem = list.filter((items) => items.id !== id);
+      setList(deleteItem);
+    })
+  }
 
   return (
     <div className="container">
 
       <form onSubmit={add}>
         <label>New item:</label>
-        <input value={items.description} name='description' placeholder='type description' onChange={handleChange}/* { e=> setItems(e.target.value)} */ /> Amount:
+        <input value={items.description} name='description' placeholder='type description' onChange={handleChange}/> Amount:
         <input value={items.amount} name='amount' placeholder='type amount' onChange={handleChange} />
 
         <button>Add</button>
       </form>
 
       <ol>
-        {item?.map(item => (
-          <li key={item.id}>{item.description}{item.amount}</li>
+        {list?.map(item => (
+          <li key={item.id}>{item.description}&nbsp;{item.amount} &nbsp;
+             <a href="#" className='delete' onClick={() => remove(item.id)}>Delete</a></li>
+          
         ))}
       </ol>
     </div>
